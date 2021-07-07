@@ -1,20 +1,14 @@
 import React from 'react';
 import createDataContext from './createDataContext';
+import jsonServer from '../api/jsonServer';
 
 const ADD = 'add';
 const EDIT = 'edit';
 const DELETE = 'delete';
+const GET = 'get';
 
 const reducer = (state, action) => {
     switch (action.type) {
-        case ADD:
-            return [...state, 
-                {
-                    id: `${Math.floor(Math.random() * 99999)}`,
-                    title: action.payload.title,
-                    content: action.payload.content
-                }
-            ];
         case EDIT:
             return state.map((blogPost) => {
                 return blogPost.id === action.payload.id 
@@ -23,37 +17,60 @@ const reducer = (state, action) => {
             });
         case DELETE:
             return state.filter((blogPost) => blogPost.id !== action.payload);
+        case GET:
+            return action.payload;
         default:
             return state;
     }
 };
 
 const addBlogPost = (dispatch) => {
-    return (title, content, callback) => {
-        dispatch({type: ADD, payload: {title, content}});
-        callback();
+    return async (title, content, callback) => {
+        try {
+            await jsonServer.post('/blogposts', {
+                title, 
+                content
+            })
+    
+            callback();
+        }
+        catch (err) {
+            console.log('Add Blog Post error', e);
+        }
     };
 };
 
 const deleteBlogPost = (dispatch) => {
-    return (id) => {
+    return async (id) => {
+        await jsonServer.delete(`/blogposts/${id}`);
         dispatch({type: DELETE, payload: id})
     };
 };
 
 const editBlogPost = (dispatch) => {
-    return (id, title, content, callback) => {
-        dispatch({type: EDIT, payload: {id, title, content}});
-        callback();
+    return async (id, title, content, callback) => {
+        try {
+            await jsonServer.put(`/blogposts/${id}`, {
+                title,
+                content
+            });
+            dispatch({type: EDIT, payload: {id, title, content}});
+            callback();
+        } catch (err) {
+            console.log('Edit blog post error', err);
+        }
+        
     };
 };
 
-export const { Context, Provider } = createDataContext(reducer, 
-    {addBlogPost, deleteBlogPost, editBlogPost}, 
-    [
-        {
-            id: `${Math.floor(Math.random() * 99999)}`,
-            title: 'Test Post',
-            content: 'Test Content'
-        }
-    ] );
+const getBlogPosts = (dispatch) => {
+    return async () => {
+        const response = await jsonServer.get('/blogposts');
+        dispatch({type: GET, payload: response.data});
+    };
+};
+
+export const { Context, Provider } = createDataContext(
+    reducer, 
+    { addBlogPost, deleteBlogPost, editBlogPost, getBlogPosts }, 
+    [] );

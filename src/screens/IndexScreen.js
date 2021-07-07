@@ -1,19 +1,31 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity } from 'react-native'
 import { Context as BlogContext } from '../context/BlogContext'
 import { Feather } from '@expo/vector-icons';
 
 const IndexScreen = ( {navigation} ) => {
 
-    const {state, deleteBlogPost} = useContext(BlogContext);
+    const { state, deleteBlogPost, getBlogPosts } = useContext(BlogContext);
 
+    useEffect(() => {
+        getBlogPosts();
+
+        const listener = navigation.addListener('didFocus', () => {
+            getBlogPosts();
+        });
+
+        // Invoked when IndexScreen is destroyed -> end of lifecycle
+        return () => {
+            listener.remove();
+        };
+    }, []);
+    
     return (
     <View>
         <FlatList 
             data={state}
             keyExtractor={(blogPost) => blogPost.id}
             renderItem={( {item} ) => {
-                console.log(item);
                 return <TouchableOpacity 
                         onPress={() => navigation.navigate('Show', {id: item.id})}>
                     <View style={styles.row}>
