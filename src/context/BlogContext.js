@@ -10,13 +10,17 @@ const reducer = (state, action) => {
         case ADD:
             return [...state, 
                 {
-                    id: Math.floor(Math.random() * 99999),
+                    id: `${Math.floor(Math.random() * 99999)}`,
                     title: action.payload.title,
                     content: action.payload.content
                 }
             ];
         case EDIT:
-            return state;
+            return state.map((blogPost) => {
+                return blogPost.id === action.payload.id 
+                    ? action.payload 
+                    : blogPost
+            });
         case DELETE:
             return state.filter((blogPost) => blogPost.id !== action.payload);
         default:
@@ -48,7 +52,7 @@ export const { Context, Provider } = createDataContext(reducer,
     {addBlogPost, deleteBlogPost, editBlogPost}, 
     [
         {
-            id: Math.floor(Math.random() * 99999),
+            id: `${Math.floor(Math.random() * 99999)}`,
             title: 'Test Post',
             content: 'Test Content'
         }
