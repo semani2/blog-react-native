@@ -2,11 +2,14 @@ import React, { useContext, useState } from 'react'
 import { View, Text, StyleSheet, FlatList, Button, TouchableOpacity, TextInput } from 'react-native'
 import { Context as BlogContext } from '../context/BlogContext'
 
-const CreateScreen = ( {navigation} ) => {
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
+const EditScreen = ( {navigation} ) => {
 
-    const {addBlogPost} = useContext(BlogContext);
+    const {state, addBlogPost} = useContext(BlogContext);
+
+    const blogPost = state.find((blogPost) => blogPost.id === navigation.getParam('id'));
+    
+    const [title, setTitle] = useState(blogPost.title);
+    const [content, setContent] = useState(blogPost.content);
 
     return (
         <View style={styles.container}>
@@ -44,4 +47,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default CreateScreen;
+export default EditScreen;
